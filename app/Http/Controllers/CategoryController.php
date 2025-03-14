@@ -20,7 +20,7 @@ class CategoryController extends Controller
         if ($category) {
             return response()->json($category);
         }
-        return response()->json(['message' => 'Category not found'], 404);
+        return response()->json(['message' => 'Categoria no encontrada'], 404);
     }
 
     public function store(Request $request)
@@ -43,7 +43,7 @@ class CategoryController extends Controller
             $category->update($validated);
             return response()->json($category);
         }
-        return response()->json(['message' => 'Category not found'], 404);
+        return response()->json(['message' => 'Categoria no encontrada'], 404);
     }
 
     public function destroy($id)
@@ -51,8 +51,8 @@ class CategoryController extends Controller
         $category = Category::find($id);
         if ($category) {
             $category->delete();
-            return response()->json(['message' => 'Category deleted']);
+            return response()->json(['message' => 'Categoria eliminada']);
         }
-        return response()->json(['message' => 'Category not found'], 404);
+        return response()->json(['message' => 'Categoria no encontrada'], 404);
     }
 }
