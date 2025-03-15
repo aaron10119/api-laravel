@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
@@ -36,13 +38,21 @@ class ProductController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[a-zA-Z0-9 ]+$/',  // Solo letras, números y espacios
+                'regex:/^[a-zA-Z0-9 ]+$/',
             ],
             'stock' => 'required|integer',
             'category_id' => 'required|exists:categories,id',
         ], [
             'name.regex' => 'El nombre del producto no debe contener caracteres especiales. Solo se permiten letras, números y espacios.',
         ]);
+    
+        $existe = Product::where('name', $validated['name'])
+                         ->where('category_id', $validated['category_id'])
+                         ->exists();
+    
+        if ($existe) {
+            return response()->json(['message' => 'Producto agregado'], 201);
+        }
     
         $product = Product::create([
             'name' => $validated['name'],
@@ -81,11 +91,24 @@ class ProductController extends Controller
     
     public function destroy($id)
     {
-        $product = Product::find($id);
-        if ($product) {
-            $product->delete();
-            return response()->json(['message' => 'Producto Eliminado']);
+        if (Cache::has("deleted_product_$id")) {
+            return response()->json(['message' => 'Este producto ya fue eliminado recientemente.'], 200);
         }
-        return response()->json(['message' => 'Producto no encontrado'], 404);
+    
+        $product = Product::find($id);
+    
+        if (!$product) {
+            return response()->json(['message' => 'Producto no encontrado'], 404);
+        }
+    
+        Cache::put("deleted_product_$id", true, now()->addSeconds(2));
+    
+        $productName = $product->name;
+        $product->delete();
+    
+        return response()->json(['message' => "Producto '$productName' eliminado"], 200);
     }
+    
+
+    
 }
