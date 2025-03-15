@@ -1,64 +1,144 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# API REST Laravel
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Esta api esta hecha en laravel
 
-## About Laravel
+## Pasos para iniciar
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### 1. Clona el repositorio de Git:
+```
+git clone <URL_DEL_REPOSITORIO>
+```
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 2. Ejecuta el proyecto con el siguiente comando:
+```
+php artisan serve
+```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 3. La base de datos que yo use es en Mysql y esta dentro del repositorio pero si se usara otro gestor como SQL
 
-## Learning Laravel
+Cree la base de datos init
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```
+CREATE DATABASE init;
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+ y ejecute la migracion categories y products, en su respectiva base de datos con su coneccion en el archivo .env
 
-## Laravel Sponsors
+```
+php artisan migrate
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=init
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-### Premium Partners
+```
+php artisan migrate
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+### 4. Tuve problemas con el certificado CORS y modifique el archivo config\cors.php con mi ruta de Vuejs:
+```
+return [
 
-## Contributing
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+    'allowed_methods' => ['*'],
 
-## Code of Conduct
+    'allowed_origins' => ['http://localhost:8081'],
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+    'allowed_origins_patterns' => [],
 
-## Security Vulnerabilities
+    'allowed_headers' => ['*'],
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+    'exposed_headers' => [],
 
-## License
+    'max_age' => 0,
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+    'supports_credentials' => false,
+
+];
+```
+
+### 5. El ejercicio uno de la prueba para validar los caracteres de la categoria y productos
+
+○ Si type es "product", el campo value no debe contener caracteres especiales, solo letras, números y espacios. 
+
+○ Si type es "category", el campo value debe ser una palabra con letras únicamente (sin números ni caracteres especiales).
+
+
+Podemos validar ese ejercicio en app\Http\Controllers\CategoryController.php y en app\Http\Controllers\ProductsController.php
+```
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-Z]+$/',  // Solo letras
+            ],
+        ], [
+            'name.regex' => 'El nombre de la categoría solo puede contener letras, no se permiten números ni espacios.',
+        ]);
+    
+        // Verificar si la categoría ya existe
+        $existe = Category::where('name', $validated['name'])->exists();
+        
+        if ($existe) {
+            return response()->json([
+                'message' => 'Categoria agregada.'
+            ], 201);
+        }
+    
+        $category = Category::create([
+            'name' => $validated['name'],
+        ]);
+    
+        return response()->json($category, 201);
+    }
+```
+
+```
+public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-Z0-9 ]+$/',
+            ],
+            'stock' => 'required|integer',
+            'category_id' => 'required|exists:categories,id',
+        ], [
+            'name.regex' => 'El nombre del producto no debe contener caracteres especiales. Solo se permiten letras, números y espacios.',
+        ]);
+    
+        $existe = Product::where('name', $validated['name'])
+                         ->where('category_id', $validated['category_id'])
+                         ->exists();
+    
+        if ($existe) {
+            return response()->json(['message' => 'Producto agregado'], 201);
+        }
+    
+        $product = Product::create([
+            'name' => $validated['name'],
+            'stock' => $validated['stock'],
+            'category_id' => $validated['category_id'],
+        ]);
+    
+        return response()->json($product, 201);
+    }
+```
+
+
+NOTA: Se estarán realizando cambios en los commits para encontrar errores, mejorar el código o agregar contenido adicional al proyecto.
+
+
+### Por Aaron Hernandez Bueno
