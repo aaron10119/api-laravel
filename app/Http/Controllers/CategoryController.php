@@ -203,6 +203,10 @@ class CategoryController extends Controller
             return response()->json(['message' => 'Categoría no encontrada'], 404);
         }
     
+        if ($category->products()->exists()) {
+            return response()->json(['message' => 'No se puede eliminar la categoría porque tiene productos asociados.'], 400);
+        }
+    
         Cache::put("deleted_category_$id", true, now()->addSeconds(2));
     
         $categoryName = $category->name;
