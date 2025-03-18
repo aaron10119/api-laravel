@@ -9,12 +9,17 @@ Esta api esta hecha en laravel
 git clone <URL_DEL_REPOSITORIO>
 ```
 
-### 2. Ejecuta el proyecto con el siguiente comando:
+### 2. Baja los cambios mas resientes
+```
+git pull origin master
+```
+
+### 3. Ejecuta el proyecto con el siguiente comando:
 ```
 php artisan serve
 ```
 
-### 3. La base de datos que yo use es en Mysql y esta dentro del repositorio pero si se usara otro gestor como SQL
+### 4. La base de datos que yo use es en Mysql y esta dentro del repositorio pero si se usara otro gestor como SQL
 
 Cree la base de datos init
 
@@ -41,7 +46,7 @@ DB_PASSWORD=
 php artisan migrate
 ```
 
-### 4. Tuve problemas con el certificado CORS y modifique el archivo config\cors.php con mi ruta de Vuejs:
+### 5. Tuve problemas con el certificado CORS y modifique el archivo config\cors.php con mi ruta de Vuejs:
 ```
 return [
 
@@ -64,7 +69,7 @@ return [
 ];
 ```
 
-### 5. El ejercicio uno de la prueba para validar los caracteres de la categoria y productos
+### 6. El ejercicio uno de la prueba para validar los caracteres de la categoria y productos
 
 ○ Si type es "product", el campo value no debe contener caracteres especiales, solo letras, números y espacios. 
 

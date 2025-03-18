@@ -8,15 +8,52 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 
-
+/**
+ * @OA\Tag(name="Categorías", description="Operaciones con categorías")
+ */
 class CategoryController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/categories",
+     *     summary="Listar todas las categorías",
+     *     tags={"Categorías"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de categorías",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Category"))
+     *     )
+     * )
+     */
     public function index()
     {
         $categories = Category::all(); 
         return response()->json($categories);
     }
 
+        /**
+     * @OA\Get(
+     *     path="/categories/{id}",
+     *     summary="Obtener una categoría por ID",
+     *     tags={"Categorías"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID de la categoría",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Categoría encontrada",
+     *         @OA\JsonContent(ref="#/components/schemas/Category")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Categoría no encontrada"
+     *     )
+     * )
+     */
     public function show($id)
     {
         $category = Category::find($id);
@@ -26,6 +63,29 @@ class CategoryController extends Controller
         return response()->json(['message' => 'Categoria no encontrada'], 404);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/categories",
+     *     summary="Crear una nueva categoría",
+     *     tags={"Categorías"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string", example="Tecnología")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Categoría creada con éxito",
+     *         @OA\JsonContent(ref="#/components/schemas/Category")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error en la validación"
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -55,6 +115,36 @@ class CategoryController extends Controller
         return response()->json($category, 201);
     }
 
+     /**
+     * @OA\Put(
+     *     path="/categories/{id}",
+     *     summary="Actualizar una categoría",
+     *     tags={"Categorías"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID de la categoría",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string", example="Deportes")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Categoría actualizada con éxito",
+     *         @OA\JsonContent(ref="#/components/schemas/Category")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Categoría no encontrada"
+     *     )
+     * )
+     */
     public function update(Request $request, $id)
     {
         $category = Category::find($id);
@@ -79,7 +169,28 @@ class CategoryController extends Controller
         return response()->json(['message' => 'Categoría no encontrada'], 404);
     }
 
-
+    /**
+     * @OA\Delete(
+     *     path="/categories/{id}",
+     *     summary="Eliminar una categoría",
+     *     tags={"Categorías"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID de la categoría",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Categoría eliminada con éxito"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Categoría no encontrada"
+     *     )
+     * )
+     */
     public function destroy($id)
     {
         if (Cache::has("deleted_category_$id")) {
